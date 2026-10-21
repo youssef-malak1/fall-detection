@@ -1,0 +1,21 @@
+# Core (versions verified on this machine)
+numpy>=1.26
+pandas>=2.1
+opencv-python>=4.9
+matplotlib>=3.8
+scikit-learn>=1.4
+pyyaml>=6.0
+tqdm>=4.66
+pytest>=8.0
+
+# Pose estimation - frozen feature extractor (Phase 1/2)
+mediapipe>=0.10,<2
+
+# Temporal model (Phase 2). CPU wheel; install the CUDA build separately on Colab.
+torch>=2.2
+
+# Inference service (Phase 3)
+fastapi>=0.111
+uvicorn[standard]>=0.30
+python-multipart>=0.0.9
+httpx>=0.27

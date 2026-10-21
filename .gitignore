@@ -1,0 +1,26 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+.pytest_cache/
+.ipynb_checkpoints/
+
+# Dataset - never commit (URFD: 115 MB + CC BY-NC-SA licence)
+data/
+
+# Raw media
+*.mp4
+*.avi
+*.mov
+
+# NOTE: models/fall_tcn.pt IS committed on purpose (~100 KB).
+# It is required to run inference without retraining.
+
+# OS / editor
+Thumbs.db
+desktop.ini
+.vscode/
+.idea/
+*.log

@@ -1,0 +1,73 @@
+# Deployed configuration record (v1.0.0).
+#
+# Descriptive, not yet wired: the authoritative values live in the code and in
+# models/fall_tcn.pt. This file exists so the configuration can be reviewed in one place
+# without reading five modules — if you change a value here, change the code too.
+
+version: 1
+
+project:
+  name: ElderLife-FallDetection
+  part: "3 - Computer Vision & Fall Detection"
+
+paths:
+  raw: data/raw/urfd
+  interim: data/interim
+  processed: data/processed
+  reports: reports
+  checkpoint: models/fall_tcn.pt
+
+dataset:
+  name: URFD
+  license: CC-BY-NC-SA-4.0        # academic / non-commercial
+  classes: [fall, adl]
+  cameras_used: [0]                # cam1 exists but would double-count every fall
+  events: 70                       # 30 falls, 40 ADL
+  footage_minutes: 8.3
+
+operational_definition:
+  # A fall = upright -> on the floor, fast, then stays down.
+  # The rule baseline implements this definition explicitly; the temporal model learns it.
+  upright_torso_angle_deg: 25
+  horizontal_torso_angle_deg: 70
+  max_transition_s: 1.2
+  min_hip_drop: 0.08
+  min_lying_s: 1.2                 # tuned inside training folds, 0.5-2.0
+
+features:
+  pose_model: mediapipe/pose_landmarker_lite
+  pose_mode: image                 # stateless: VIDEO mode leaks tracker state between clips
+  source_fps: 30
+  pose_stride: 2                   # -> 15 fps
+  upscale: 2
+  motion_background: per-clip median
+  channels: 19                     # 15 pose + 4 motion, see src/models/sequences.py
+
+model:
+  architecture: FallTCN
+  width: 32
+  dilations: [1, 2, 4, 8]
+  parameters: 24641
+  window_frames: 48                # 3.2 s at 15 fps
+  eval_stride: 12
+  threshold: 0.5
+  aggregation: max_over_windows
+
+evaluation:
+  split: event_level_stratified    # never file-level (cam0/cam1) and never frame/window
+  folds: 5
+  seed: 42
+  normalization: fitted_on_training_folds_only
+  early_stopping: inner_split_of_training_fold
+  primary_metrics: [precision, recall, f1]
+  extra_metrics: [auc_per_fold, observed_false_alarm_count]
+  # Deliberately NOT reported: false alarms per 24 h. 298 s of ADL footage cannot
+  # support that number.
+
+inference:
+  service: fastapi
+  port: 8100
+  schema_version: "1.0"
+  max_upload_mb: 200
+  alert_confirm_windows: 1
+  alert_cooldown_s: 30
