@@ -8,7 +8,9 @@ venv/
 .ipynb_checkpoints/
 
 # Dataset - never commit (URFD: 115 MB + CC BY-NC-SA licence)
-data/
+# NOTE: leading slash is required. Without it, "data/" also matches src/data/,
+# which is source code and must be committed.
+/data/
 
 # Raw media
 *.mp4
